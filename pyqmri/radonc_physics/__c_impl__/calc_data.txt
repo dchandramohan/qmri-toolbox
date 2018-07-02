@@ -1,0 +1,29 @@
+[[[*** Testing my mean ionization potential calculator! ... ***]]]
+
+*@*@*@* Hydroxyapatite (Ca5(PO4)3(OH)) *@*@*@*
+Computing total molecular weight... 502.320923 grams/mol
+
+Computing relative abundances...
+	[H] = 0.200649%
+	[O] = 41.406238%
+	[P] = 18.498294%
+	[Ca] = 39.894816%
+
+Computing mean ionization potential, I_m (eV), by Bragg Additivity Rule ...
+	I_m (BAR) = 156.202347
+
+
+*@*@*@* Gypsum (CaSO4 * 2 H2O) *@*@*@*
+Computing total molecular weight... 172.167999 grams/mol
+
+Computing relative abundances...
+	[H] = 2.341666%
+	[O] = 55.757397%
+	[S] = 18.621348%
+	[Ca] = 23.279588%
+
+Computing mean ionization potential, I_m (eV), by Bragg Additivity Rule ...
+	I_m (BAR) = 129.780838
+
+Gypsum differs from Hydroxyapatite by -16.914924% ...
+DONE!
