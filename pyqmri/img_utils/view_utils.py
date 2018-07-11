@@ -1,6 +1,7 @@
 __author__ = "Dharshan Chandramohan"
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 def norm_mag_slice(cplx_data_3d, slice_num, axis):
     nz, ny, nx = cplx_data_3d.shape
@@ -35,3 +36,23 @@ def norm_mag_slice(cplx_data_3d, slice_num, axis):
 
     return row_axis, col_axis, scl_slice
 
+def preview_volume_mag_DICOM(vol3d, axis=2):
+    pass
+
+def preview_volume_cplx(vol3d, axis=2, figsize=(20.0, 20.0), grid=(5, 4)):
+    n_axes = grid[0] * grid[1]
+    n_planes = vol3d.shape[2 - axis] # kludge for z, y, x order...
+    
+    fig, ax = plt.subplots(grid[0], grid[1], figsize=figsize)
+    prev_planes = np.arange(0, n_planes, int(np.ceil(n_planes/n_axes)))
+
+    for pl, sli in enumerate(prev_planes):
+        rr, cc, imslice = norm_mag_slice(vol3d, sli, axis)
+        aa = ax[int(pl/4)][int(pl%4)]
+        aa.pcolormesh(rr, cc, imslice)
+        aa.set_title('Sl #{:d}'.format(sli))
+
+    fig.tight_layout()
+    fig.patch.set_facecolor('white')
+
+    return fig
