@@ -39,6 +39,23 @@ def norm_mag_slice(cplx_data_3d, slice_num, axis):
 def preview_volume_mag_DICOM(vol3d, axis=2):
     pass
 
+def preview_volume_DICOM(vol3d, axis=2, figsize=(20.0,20.0), grid=(5, 4)):
+    n_axes = grid[0] * grid[1]
+    n_planes = vol3d.shape[axis]
+
+    fig, ax = plt.subplots(grid[0], grid[1], figsize=figsize)
+    prev_planes = np.arange(0, n_planes, int(np.ceil(n_planes/n_axes)))
+
+    for pl, sli in enumerate(prev_planes):
+        aa = ax[int(pl/4)][int(pl%4)]
+        aa.imshow(vol3d[:,:,sli])
+        aa.set_title('Sl #{:d}'.format(sli))
+
+    fig.tight_layout()
+    fig.patch.set_facecolor('white')
+
+    return fig
+
 def preview_volume_cplx(vol3d, axis=2, figsize=(20.0, 20.0), grid=(5, 4)):
     n_axes = grid[0] * grid[1]
     n_planes = vol3d.shape[2 - axis] # kludge for z, y, x order...
