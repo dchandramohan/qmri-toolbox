@@ -1,0 +1,164 @@
+import pydicom; import matplotlib.pyplot as plt; import os; import numpy as np;
+from scipy.optimize import least_squares as scipyls;
+from ParameterFitting import t2strw_mag_resid, T2str_mag_simplified;
+
+# Default directory
+directory = "C:/Users/ktgao/imagingData/larsonRotation/WUSL/HA_MR_20171016/Head/FA_15_0005/";
+
+def reorderEcho(imset, S, TE):
+    """Rearranges parameter arrays to [x, y, TE, z]
+    
+    @imset, S, TE unordered images, signal intensities, echo time
+    
+    @return: ordered imset, S, TE
+    """
+    ordered_imset = [];
+    ordered_S = [];
+    ordered_TE = [];
+    numIm = int(len(TE) / len(np.unique(TE)));
+    
+    for i in range(numIm):
+        ordered_imset.extend(imset[i::numIm]);
+        ordered_S.extend(S[i::numIm]);
+        ordered_TE.extend(TE[i::numIm]);
+    
+    return ordered_imset, ordered_S, ordered_TE;
+
+def getKest(imset, TE):
+    """Estimates M0 (K) as signal intensity at the lowest echo time acquisition
+    amplified by a multiplier on a voxel-by-voxel basis
+    
+    @input: imset, image set
+            TE, set of corresponding echo times
+    
+    @output: Kest, set of corresponding estimate of K
+    """
+    indKest = [i for i, x in enumerate(TE) if x == min(TE)];
+    
+    minTE = [];
+    Kest = [];
+    
+    for ind in indKest:
+        minTE.append(imset[ind]);
+    for im in minTE:
+        Kest.append(im.pixel_array);
+    
+    # Multiplier, default = 1.2
+    Kest = np.multiply(Kest, 1.2);
+    
+    return Kest;
+
+def getNest(imset, TE):
+    """Estimates offset (N) as signal intensity at the highest echo time 
+    acquisition on a voxel-by-voxel basis
+    
+    @input: imset, image set
+            TE, set of corresponding echo times
+            
+    @output: Nest, set of coresponding N estimates
+    """
+    indNest = [i for i, x in enumerate(TE) if x == max(TE)];
+    
+    maxTE = [];
+    Nest = [];
+    
+    for ind in indNest:
+        maxTE.append(imset[ind]);
+    for im in maxTE:
+        Nest.append(im.pixel_array);
+    
+    Nest = np.array(Nest);
+    
+    return Nest;
+
+def getT2StarEst(TE, Kest, Nest):
+    """Estimates T2* using the following:
+    
+            T2* = (log(K) - log(N))/(min(TE) - max(TE))
+    
+    @input: TE, set of echo time
+            Kest, set of corresponding estimates of K
+            Nest, set of corresponding estimates of N
+    
+    @output: T2StarEst, set of corresponding estimates of T2*
+    """
+            
+    T2StarEst = (np.log(Kest) - np.log(Nest))/(min(TE) - max(TE));
+    
+    T2StarEst = np.nan_to_num(T2StarEst);
+    T2StarEst = T2StarEst.clip(min = 0);
+    
+    return T2StarEst;
+
+def getT2StarParamEst(imset, TE):
+    """Returns estimates for T2* mapping
+    
+    @input: imset, set of images
+            TE, set of corresponding echo times
+    
+    @output: param, set of estimated parameters
+    
+            param[0] = T2StarEst
+            param[1] = Kest
+            param[2] = Nest
+    """
+    
+    Kest = getKest(imset, TE);
+    Nest = getNest(imset, TE);
+    T2StarEst = getT2StarEst(TE, Kest, Nest);
+    
+    param = [T2StarEst, Kest, Nest];
+    
+    return param;
+
+def generateT2StarMap(directory):
+    """Generates T2* map from a set of dicom images using Levenberg-Marquardt
+        least squares and a simplified signal magnitude model as residual
+        (t2strw_mag_resid.py)
+    
+    @input: directory, folder directory of dicom images
+    
+    @output:    T2map, voxel by voxel T2 map
+                param, set of estimated parameters
+    
+                param[0] = T2StarEst
+                param[1] = Kest
+                param[2] = Nest
+    """
+    
+    imset = [];
+    S = [];
+    TE = [];
+    
+    # Builds set of images and their corresponding echo times and signal mag
+    for filename in os.listdir(directory):
+        file = pydicom.dcmread(directory + filename);
+        imset.append(file);
+        S.append(file.pixel_array);
+        TE.append(file[0x18,0x81].value);
+    
+    # Reorders indices to [x, y, TE, z]
+    [imset, S, TE] = reorderEcho(imset, S, TE);
+    
+    # Generates parameter estimates
+    param = getT2StarParamEst(imset, TE);
+
+    T2map = np.zeros(param[0].shape);
+    
+    # Calcultaes least squares on a voxel-by-voxel basis
+    for ix, iy in np.ndindex(param[0][0].shape):
+        # Initial guess
+        x0 = [param[0][iz][ix, iy], param[1][iz][ix, iy], param[2][iz][ix, iy]];
+        argTE = []; argS = [];
+        
+        # Additional arguments to minimize param, echo time and signal
+        for i in range(len(np.unique(TE))):
+            argTE.append(TE[len(np.unique(TE)) * iz + i]);
+            argS.append(S[len(np.unique(TE)) * iz + i][ix, iy]);
+        
+        # Returns optimal param
+        sol = scipyls(t2strw_mag_resid, x0, args = (argTE, argS), method='lm', verbose = 2);
+        
+        T2map[iz][ix, iy] = sol.x[0];
+        
+    return T2map, param;
