@@ -1,0 +1,100 @@
+import pydicom; import matplotlib.pyplot as plt; import os; import numpy as np;
+
+# Sets directories of sequences of interest for T1 fitting
+directory1 = "C:/Users/ktgao/imagingData/larsonRotation/WUSL/HA_MR_20171016/Head/FA_20_0013/";
+directory2 = "C:/Users/ktgao/imagingData/larsonRotation/WUSL/HA_MR_20171016/Head/FA_3_0003/";
+directory3 = "C:/Users/ktgao/imagingData/larsonRotation/UCSF/UTET1_brain/RawData/";
+
+def getT1Params(imset):
+    """Gathers T1 parameters from a set of images for T1 fitting
+    
+    @imset: array of image sequence
+    
+    @return signal intensities, echo times, repetition time, flip angle
+    """
+    S = [];                     # 192x192 array of signal intensities
+    TE = [];                    # Echo times
+    FA = [];                    # Flip angles
+    TR = [];                    # Repetition times
+    minTE = [];
+    
+    # Gathers TE, TR, SA for each image
+    for image in imset:
+        TE.append(image[0x18,0x81].value);
+        FA.append(image[0x18,0x1314].value);
+        TR.append(image[0x18,0x80].value);
+    
+    # Indices of the images with the shortest echo times for best T1 retention
+    indS = [i for i, x in enumerate(TE) if x == min(TE)];
+    # Set of images at indices with shortest TE
+    for ind in indS:
+        minTE.append(imset[ind]);
+    # Signal intensities of images with shortest TE
+    for im in minTE:
+        S.append(np.absolute(im.pixel_array));
+    
+    # Ensures flip angles are consistent within the sequences
+    if all(fa == FA[0] for fa in FA):
+        FA = np.radians(FA[0]);
+    else:
+        print("Flip angle inconsistent");
+    
+    # Ensures all repetition times are consistent
+    if all(tr == TR[0] for tr in TR):
+        TR = TR[0];
+    else:
+        print("Repetition time is inconsistent");
+    
+    return S, TE, FA, TR;
+
+def generateT1Map(dir1, dir2 = ''):
+    """Generates 3D T1 map.
+    @ dir1, dir2 - directories of image sequences acquired using two flip angles
+    @ return T1 map
+    """
+    from ParameterFitting import calc_VFA_T1;
+    
+    imset1 = [];                    # All images within the directory
+    
+    # Iterates through all files in directory 1
+    for filename in os.listdir(dir1):
+        file = pydicom.dcmread(dir1 + filename);
+        imset1.append(file);
+    
+    param1 = [S1, TE1, FA1, TR1] = getT1Params(imset1);
+    
+    # If images are in two separate directories
+    if len(dir2) > 1:
+        imset2 = [];
+        # Iterates through all files in directory 2
+        for filename in os.listdir(dir2):
+            file = pydicom.dcmread(dir2 + filename);
+            imset2.append(file);
+        
+        param2 = [S2, TE2, FA2, TR2] = getT1Params(imset2);
+    
+    # If all images are in one directory
+    else:
+        FA = np.unique(FA1);
+        numFA = len(FA);
+        
+        # Confirm two sets of flip angles exist
+        if numFA == 2:
+            ind1 = [i for i, x in enumerate(FA) if x == FA[0]]
+            ind2 = [i for i, x in enumerate(FA) if x == FA[1]];
+            
+            param2 = [S2, TE2, FA2, TR2] = getT1Params(imset1[ind2]);
+            
+            S1 = S1[ind1];
+            TE1 = TE1[ind1];
+        else:
+            print("Not enough or too many flip angles");    
+    
+    # Ensures all repetition times are consistent
+    if TR1 == TR2:
+        T1 = calc_VFA_T1(S1, S2, FA1, FA2, TR1);
+        T1 = np.nan_to_num(T1);
+    else:
+        print("Repetition time is inconsistent");
+    
+    return T1, param1, param2;
