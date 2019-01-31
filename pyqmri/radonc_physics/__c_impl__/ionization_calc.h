@@ -20,5 +20,6 @@ const ELEMENT _Ca_; // = {"Ca", 20, 40.08, 215.8};
 const ELEMENT _Se_; // = {"Se", 34, 78.96, 348};
 
 float calc_Im_bragg(__uint8_t n_el, __uint8_t *q_el, ELEMENT *el_list);
+float calc_el_dens(float mass_dens, __uint8_t n_el, __uint8_t *q_el, ELEMENT *el_list);
 
 #endif

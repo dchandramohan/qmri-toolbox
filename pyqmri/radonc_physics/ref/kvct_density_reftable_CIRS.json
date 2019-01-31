@@ -8,38 +8,38 @@
     {
 	"tissue" : "Adipose",
 	"ct_num" : 940.78,
-	"rel_elec_dens" : 0.9931,
-	"physical_dens" : 0.958
+	"rel_elec_dens" : 0.952,
+	"physical_dens" : 0.967
     },
     {
     "tissue" : "Muscle",
     "ct_num" : 1078.44,
-    "rel_elec_dens" : 1.0972,
-    "physical_dens" : 1.067
+    "rel_elec_dens" : 1.043,
+    "physical_dens" : 1.062
     },
     {
     "tissue" : "Dense Bone (800 mg/cc HA)",
     "ct_num" : 2224.23,
-    "rel_elec_dens" : 1.5889,
+    "rel_elec_dens" : 1.512,
     "physical_dens" : 1.613
     },
     {
     "tissue" : "Lung (Exhale)",
     "ct_num" : 471.63,
-    "rel_elec_dens" : 0.5110,
-    "physical_dens" : 0.494
+    "rel_elec_dens" : 0.489,
+    "physical_dens" : 0.495
     },
     {
     "tissue" : "Trabecular Bone (200 mg/cc HA)",
     "ct_num" : 1302.75,
-    "rel_elec_dens" : 1.1731,
-    "physical_dens" : 1.164
+    "rel_elec_dens" : 1.117,
+    "physical_dens" : 1.161
     },
     {
     "tissue" : "Lung (Inhale)",
     "ct_num" : 155.95,
-    "rel_elec_dens" : 0.2019,
-    "physical_dens" : 0.197
+    "rel_elec_dens" : 0.190,
+    "physical_dens" : 0.195
     },
     {
     "tissue" : "Dense Bone (1750 mg/cc)",
@@ -50,19 +50,19 @@
     {
     "tissue" : "Breast 50/50",
     "ct_num" : 977.95,
-    "rel_elec_dens" : 1.0217,
-    "physical_dens" : 0.989
+    "rel_elec_dens" : 0.976,
+    "physical_dens" : 0.991
     },
     {
 	"tissue" : "Liquid water",
 	"ct_num" : 1022.22,
 	"rel_elec_dens" : 1.0,
-	"physical_dens" : 1.000
+	"physical_dens" : 1.0
     },
     {
 	"tissue" : "Liver",
 	"ct_num" : 1077.62,
-	"rel_elec_dens" : 1.1005,
-	"physical_dens" : 1.069
+	"rel_elec_dens" : 1.052,
+	"physical_dens" : 1.071
     }
 ]

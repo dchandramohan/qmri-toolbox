@@ -14,8 +14,8 @@ const ELEMENT _Ca_ = {"Ca", 20, 40.08, 215.8};
 const ELEMENT _Se_ = {"Se", 34, 78.96, 348};
 
 float calc_Im_bragg(__uint8_t n_el,            // number of elemental constituents
-		  __uint8_t *q_el,           // array of quantities of each element
-		  ELEMENT *el_list)        // array of elements
+		    __uint8_t *q_el,           // array of quantities of each element
+		    ELEMENT *el_list)        // array of elements
 {
   __uint8_t ii;
   float w_el[MAX_NUM_ELEMENTS];
@@ -53,3 +53,43 @@ float calc_Im_bragg(__uint8_t n_el,            // number of elemental constituen
 
   return Im;
 }
+
+float calc_el_dens(float mass_dens,           // mass density
+		   __uint8_t n_el,            // number of elemental constituents
+		   __uint8_t *q_el,           // array of quantities of each element
+		   ELEMENT *el_list)          // array of elements
+{
+  __uint8_t ii;
+  float w_el[MAX_NUM_ELEMENTS];
+  
+  // total molecular weight
+  printf("Computing total molecular weight... ");
+  float total_mol_wt;
+  total_mol_wt = 0;
+  
+  for (ii = 0; ii < n_el; ii++)
+    total_mol_wt += (float)q_el[ii] * el_list[ii].A;
+  printf("%f grams/mol\n", total_mol_wt);
+  
+  // relative abundances
+  printf("\nComputing relative abundances...\n");
+  for (ii = 0; ii < n_el; ii++) {
+    w_el[ii] = ((float)q_el[ii] * el_list[ii].A) / total_mol_wt;
+    printf("\t[%s] = %f%%\n", el_list[ii].symbol, w_el[ii] * 100.0);
+  }
+
+  float sum1;
+  sum1 = 0.0;
+  for (ii = 0; ii < n_el; ii++) {
+    sum1 += w_el[ii] * ((float)el_list[ii].Z / el_list[ii].A);
+  }
+
+  float w_H, w_O, sum2;
+  w_H = (2.0 * _H_.A)/((2.0 * _H_.A) + (1.0 * _O_.A));
+  w_O = (1.0 * _O_.A)/((2.0 * _H_.A) + (1.0 * _O_.A));
+  sum2 = ((w_H * (float)_H_.Z / _H_.A) + (w_O * (float)_O_.Z / _O_.A));
+  
+  return mass_dens * sum1 / sum2;
+}
+
+  
