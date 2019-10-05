@@ -1,0 +1,12 @@
+"""
+Utility functions, constants, etc. for fitting MR signal models
+"""
+
+__author__ = "Dharshan Chandramohan"
+
+_PROTON_GYROMAGNETIC_RATIO = 42.577478518e6 # Hz/T (NIST: https://physics.nist.gov/cgi-bin/cuu/Value?gammapbar)
+
+def ppm2Hz(delta_ppm, B0=3.0):
+    return (delta_ppm/1e6) * (_PROTON_GYROMAGNETIC_RATIO * B0)
+
+

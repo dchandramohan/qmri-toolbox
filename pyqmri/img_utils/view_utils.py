@@ -73,3 +73,28 @@ def preview_volume_cplx(vol3d, axis=2, figsize=(20.0, 20.0), grid=(5, 4)):
     fig.patch.set_facecolor('white')
 
     return fig
+
+# Misc: there's nowhere else to put this but I find it useful
+from IPython.display import clear_output
+
+class SimpleProgress(object):
+    def __init__(self, bar_length=50):
+        self.bar_length = bar_length
+
+    def update(self, progress):
+        if isinstance(progress, int):
+            progress = float(progress)
+        if not isinstance(progress, float):
+            progress = 0
+        if progress < 0:
+            progress = 0
+        if progress >= 1:
+            progress = 1
+
+        block = int(round(self.bar_length * progress))
+        clear_output(wait = True)
+
+        text = "Progress: [{0}] {1:.1f}%".format( "#" * block + "-" * (self.bar_length - block),
+                                                  progress * 100)
+        print(text)
+
